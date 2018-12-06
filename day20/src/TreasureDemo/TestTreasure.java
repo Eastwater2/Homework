@@ -4,6 +4,7 @@ import javax.annotation.Resource;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 public class TestTreasure {
@@ -28,26 +29,21 @@ public class TestTreasure {
         // 根据类名加载类, 得到类对象
         Class<?> clazz = cl.loadClass("com.westos.Treasure");
 //        Object obj = clazz.newInstance();
-        //需求：模拟挖宝藏, 给三次机会, 并提示还有几次。
-        //     for (Method method : clazz.getMethods()) {
-//            //System.out.println(method);
+        //调用私有构造
+        Constructor<?> cons = clazz.getDeclaredConstructor();
+        cons.setAccessible(true);
+        //创建实例对象
+        Object obj = cons.newInstance();
+        //获取注解
         Resource methodAnnotation = clazz.getAnnotation(Resource.class);
-            for (int i = 1; i <= 3; i++) {
-
-                if (methodAnnotation != null) {
-                    System.out.println("恭喜你，挖到宝藏了");
-                    break;
-                } else {
-                    if ((3 - i) == 0) {
-                        System.out.println("抱歉，你的机会已用完");
-                    } else {
-                        System.out.println("挖宝失败,还有" + (3 - i) + "次机会");
-                    }
-
-                }
-            }
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+             if(methodAnnotation!=null){
+                   method.invoke(obj);
+             }
         }
     }
+}
 
         /*
         public void com.westos.Treasure.me247e3d53e724001a4e828add5698d3c()
