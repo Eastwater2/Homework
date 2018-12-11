@@ -1,0 +1,164 @@
+以下练习针对部门员工表，请导入scott.sql的数据
+
+1.打印入职时间超过38年的员工信息
+select * from emp where (extract(year from date(now())) - extract(year from hiredate))>38;
+Empty set (0.00 sec)
+select * from emp where (extract(year from date(now())) - extract(year fr
+om hiredate))>=38;
++-------+-------+-------+------+------------+--------+------+--------+
+| empno | ename | job   | mgr  | hiredate   | sal    | comm | deptno |
++-------+-------+-------+------+------------+--------+------+--------+
+|  7369 | SMITH | CLERK | 7902 | 1980-12-17 | 800.00 | NULL |     20 |
++-------+-------+-------+------+------------+--------+------+--------+
+
+2.把hiredate列看做是员工的生日,求本月过生日的员工(本月为12月)
+select * from emp where (extract(month from date(now())) - extract(month
+from hiredate))=0;
+select * from emp where (extract(month from hiredate))=12;
++-------+-------+---------+------+------------+---------+------+--------+
+| empno | ename | job     | mgr  | hiredate   | sal     | comm | deptno |
++-------+-------+---------+------+------------+---------+------+--------+
+|  7369 | SMITH | CLERK   | 7902 | 1980-12-17 |  800.00 | NULL |     20 |
+|  7900 | JAMES | CLERK   | 7698 | 1981-12-03 |  950.00 | NULL |     30 |
+|  7902 | FORD  | ANALYST | 7566 | 1981-12-03 | 3000.00 | NULL |     20 |
++-------+-------+---------+------+------------+---------+------+--------+
+
+3.把hiredate列看做是员工的生日,求下月过生日的员工(下月为1月)
+select * from emp where (extract(month from hiredate))=extract(month from
+date_add(now(),interval 1 month));
+select * from emp where (extract(month from hiredate))=1;
++-------+--------+-------+------+------------+---------+------+--------+
+| empno | ename  | job   | mgr  | hiredate   | sal     | comm | deptno |
++-------+--------+-------+------+------------+---------+------+--------+
+|  7934 | MILLER | CLERK | 7782 | 1982-01-23 | 1300.00 | NULL |     10 |
++-------+--------+-------+------+------------+---------+------+--------+
+
+4.求1980年下半年入职的员工
+select * from emp where extract(year from hiredate)=1980 and extract(mont
+h from hiredate)>6;
++-------+-------+-------+------+------------+--------+------+--------+
+| empno | ename | job   | mgr  | hiredate   | sal    | comm | deptno |
++-------+-------+-------+------+------------+--------+------+--------+
+|  7369 | SMITH | CLERK | 7902 | 1980-12-17 | 800.00 | NULL |     20 |
++-------+-------+-------+------+------------+--------+------+--------+
+
+5.请用两种的方式查询所有名字长度为4的员工的员工编号,姓名
+a.  select empno,ename from emp where char_length(ename)=4;
+b.  select empno,ename from emp where ename like '____';
++-------+-------+
+| empno | ename |
++-------+-------+
+|  7521 | WARD  |
+|  7839 | KING  |
+|  7902 | FORD  |
++-------+-------+
+
+6.显示各种职位的最低工资
+select job,min(sal) '最低工资' from emp group by job;
++-----------+----------+
+| job       |  最低工资 |
++-----------+----------+
+| ANALYST   |  3000.00 |
+| CLERK     |   800.00 |
+| MANAGER   |  2450.00 |
+| PRESIDENT |  5000.00 |
+| SALESMAN  |  1250.00 |
++-----------+----------+
+
+7.求1980年各个月入职的的员工个数
+select extract(month from hiredate),count(empno) from emp where extract(y
+ear from hiredate)=1980 group by extract(month from hiredate) asc;
++------------------------------+--------------+
+| extract(month from hiredate) | count(empno) |
++------------------------------+--------------+
+|                           12 |            1 |
++------------------------------+--------------+
+
+8.查询每个部门的最高工资
+select deptno,max(sal) from emp group by deptno;
++--------+----------+
+| deptno | max(sal) |
++--------+----------+
+|     10 |  5000.00 |
+|     20 |  3000.00 |
+|     30 |  2850.00 |
++--------+----------+
+
+9.查询每个部门,每种职位的最高工资
+select deptno,job,max(sal) from emp group by deptno,job order by deptno;
++--------+-----------+----------+
+| deptno | job       | max(sal) |
++--------+-----------+----------+
+|     10 | CLERK     |  1300.00 |
+|     10 | MANAGER   |  2450.00 |
+|     10 | PRESIDENT |  5000.00 |
+|     20 | ANALYST   |  3000.00 |
+|     20 | CLERK     |  1100.00 |
+|     20 | MANAGER   |  2975.00 |
+|     30 | CLERK     |   950.00 |
+|     30 | MANAGER   |  2850.00 |
+|     30 | SALESMAN  |  1600.00 |
++--------+-----------+----------+
+
+10.查询各部门的总工资和平均工资
+select deptno,sum(sal)'总工资',avg(sal)'平均工资' from emp group by deptn
+o;
++--------+----------+-------------+
+| deptno | 总工资   | 平均工资    |
++--------+----------+-------------+
+|     10 |  8750.00 | 2916.666667 |
+|     20 | 10875.00 | 2175.000000 |
+|     30 |  9400.00 | 1566.666667 |
++--------+----------+-------------+
+
+11.查询10号部门,20号部门的平均工资（尝试用多种写法）
+a. select deptno,avg(sal) from emp where deptno =10 or deptno=20 group by de
+   ptno order by deptno;
+b. select deptno,avg(sal) from emp group by deptno having deptno =10 or dept
+   no=20 order by deptno;
++--------+-------------+
+| deptno | avg(sal)    |
++--------+-------------+
+|     10 | 2916.666667 |
+|     20 | 2175.000000 |
++--------+-------------+
+
+12.查询平均工资高于2000元的部门编号和平均工资
+select deptno,avg(sal)'平均工资' from emp group by deptno having avg(sal)>
+2000;
++--------+-------------+
+| deptno | 平均工资    |
++--------+-------------+
+|     10 | 2916.666667 |
+|     20 | 2175.000000 |
++--------+-------------+
+
+13.统计公司里经理的人数
+select count(empno) from emp group by job having job='MANAGER';
++--------------+
+| count(empno) |
++--------------+
+|            3 |
++--------------+
+
+14.查询工资最高的3名员工信息
+select * from emp order by sal desc limit 3;
++-------+-------+-----------+------+------------+---------+------+--------+
+| empno | ename | job       | mgr  | hiredate   | sal     | comm | deptno |
++-------+-------+-----------+------+------------+---------+------+--------+
+|  7839 | KING  | PRESIDENT | NULL | 1981-11-17 | 5000.00 | NULL |     10 |
+|  7902 | FORD  | ANALYST   | 7566 | 1981-12-03 | 3000.00 | NULL |     20 |
+|  7788 | SCOTT | ANALYST   | 7566 | 1987-07-13 | 3000.00 | NULL |     20 |
++-------+-------+-----------+------+------------+---------+------+--------+
+
+15.查询工资由高到低第6到第10的员工信息
+select * from emp order by sal desc limit 5,5;
++-------+--------+----------+------+------------+---------+--------+--------+
+| empno | ename  | job      | mgr  | hiredate   | sal     | comm   | deptno |
++-------+--------+----------+------+------------+---------+--------+--------+
+|  7782 | CLARK  | MANAGER  | 7839 | 1981-06-09 | 2450.00 |   NULL |     10 |
+|  7499 | ALLEN  | SALESMAN | 7698 | 1981-02-20 | 1600.00 | 300.00 |     30 |
+|  7844 | TURNER | SALESMAN | 7698 | 1981-09-08 | 1500.00 |   0.00 |     30 |
+|  7934 | MILLER | CLERK    | 7782 | 1982-01-23 | 1300.00 |   NULL |     10 |
+|  7521 | WARD   | SALESMAN | 7698 | 1981-02-22 | 1250.00 | 500.00 |     30 |
++-------+--------+----------+------+------------+---------+--------+--------+

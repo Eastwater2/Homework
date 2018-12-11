@@ -1,0 +1,113 @@
+1.查询李四学习的课程，考试分数，课程的授课老师
+
+2.查询王五有哪些课程没选，显示这些课程名称
+
+3.查询所有同学的学号、姓名、选课数、总成绩
+select a.sid '学号',a.sname '姓名',count(b.cid) '选课数',sum(score) '总成绩' from student a left join sc b on a.sid=b.sid group by a.sid,a.sname order by a.sid;
++------+------+--------+--------+
+| 学号 | 姓名 | 选课数 | 总成绩 |
++------+------+--------+--------+
+| 1001 | 张三 |      7 |    550 |
+| 1002 | 李四 |      4 |    315 |
+| 1003 | 王五 |      2 |    129 |
+| 1004 | 赵六 |      2 |    150 |
+| 1005 | 孙七 |      4 |    230 |
+| 1006 | 周八 |      1 |     60 |
+| 1007 | 张三 |      4 |    328 |
++------+------+--------+--------+
+
+4.查询所有课程成绩都小于等于60分的同学的学号、姓名；
+select a.sid,a.sname,score from student a,sc b where a.sid=b.sid group by a.sid,a.sname having score <=60 ;
+
+
+5.查询没有学全所有课的同学的学号、姓名；
+select student.sid,student.sname from student left join sc on student.sid=sc.sid group by student.sid,student.sname having count(cid)<(select count(cid) from course);
++------+-------+
+| sid  | sname |
++------+-------+
+| 1002 | 李四  |
+| 1003 | 王五  |
+| 1004 | 赵六  |
+| 1005 | 孙七  |
+| 1006 | 周八  |
+| 1007 | 张三  |
++------+-------+
+
+6.查询每门课程选修人数，格式为课程名称，人数；
+select course.cname '课程名', count(sc.sid) '人数'  from sc  left join co
+urse  on sc.cid=course.cid group by sc.cid order by count(sc.sid) desc;
++----------+------+
+| 课程名   | 人数 |
++----------+------+
+| 企业管理 |    7 |
+| 数据库   |    4 |
+| 马克思   |    4 |
+| 语文     |    3 |
+| 数学     |    3 |
+| UML      |    2 |
+| 英语     |    1 |
++----------+------+
+
+7.查询出只选修了一门课程的全部学生的学号和姓名 ；
+select student.sid , student.sname  from student, sc where student.sid = sc.sid group by student.sid , student.sname having count(*) =1;
++------+-------+
+| sid  | sname |
++------+-------+
+| 1006 | 周八  |
++------+-------+
+
+8.查询每门课程的平均成绩，结果按平均成绩升序排列，平均成绩相同时，按课程号降序排列
+select c.cid,c.cname,cast(avg(s.score) as decimal(18,2)) avg_score from course c,sc s where c.cid=s.cid group by c.cid,c.cname order by avg_score desc,c.cid asc;
++-----+----------+-----------+
+| cid | cname    | avg_score |
++-----+----------+-----------+
+|   3 | UML      |     90.00 |
+|   6 | 语文     |     86.67 |
+|   7 | 数学     |     86.67 |
+|   5 | 英语     |     80.00 |
+|   1 | 企业管理 |     69.86 |
+|   2 | 马克思   |     65.00 |
+|   4 | 数据库   |     58.25 |
++-----+----------+-----------+
+
+9.查询学生平均成绩大于80的所有学生的学号、姓名和平均成绩
+select a.sid,a.sname,cast(avg(b.score) as decimal(18,2)) avg_score from student a,sc b where a.sid=b.sid group by a.sid,a.sname having cast(avg(b.score) as decimal(18,2))>=80 order by a.sid;
++------+-------+-----------+
+| sid  | sname | avg_score |
++------+-------+-----------+
+| 1007 | 张三  |     82.00 |
++------+-------+-----------+
+
+10.查询课程相同且成绩相同的的学生的学号、课程号、学生成绩
+select m.* from SC m where exists (select 1 from (select CID , score from SC group by CID , score having count(1) > 1) n where m.CID= n.CID and m.score = n.score) order by m.CID , m.score , m.SID；
++------+-----+-------+
+| sid  | cid | score |
++------+-----+-------+
+| 1001 |   1 |    50 |
+| 1005 |   1 |    50 |
+| 1001 |   2 |    70 |
+| 1003 |   2 |    70 |
+| 1004 |   2 |    70 |
+| 1002 |   6 |    90 |
+| 1007 |   6 |    90 |
+| 1002 |   7 |    80 |
+| 1007 |   7 |    80 |
++------+-----+-------+
+
+11.查询全部学生都选修的课程的课程号和课程名
+select Course.CID , Course.Cname  from Course , SC where Course.CID = SC.CID group by Course.CID , Course.Cname having count(*) =7;
++-----+----------+
+| CID | Cname    |
++-----+----------+
+|   1 | 企业管理 |
++-----+----------+
+
+
+
+12.查询两门以上不及格课程的同学的学号及其平均成绩
+select student.sid,student.sname,cast(avg(score) as decimal(18,2)) avg_score from student,sc where student.sid=sc.sid and student.sid in(select sid from sc where score<60 group by sid having count(1)>=2) group by student.sid,student.sname;
++------+-------+-----------+
+| sid  | sname | avg_score |
++------+-------+-----------+
+| 1005 | 孙七  |     57.50 |
++------+-------+-----------+
