@@ -1,6 +1,25 @@
 1.查询李四学习的课程，考试分数，课程的授课老师
+select b.cname, c.score, d.tname  from student a inner join sc c on(a.sid=c.sid) inner join course b on (c.cid=b.cid) inner join teacher d on (b.tid=d.tid) where a.sname='李四';
++----------+-------+--------+
+| cname    | score | tname  |
++----------+-------+--------+
+| 企业管理 |    90 | 叶平   |
+| 数据库   |    55 | 李老师 |
+| 语文     |    90 | 叶平   |
+| 数学     |    80 | 王老师 |
++----------+-------+--------+
 
 2.查询王五有哪些课程没选，显示这些课程名称
+select cname from course where cid not in(select cid from student a inner join sc b on a.sid=b.sid where a.sname='王五');
++--------+
+| cname  |
++--------+
+| UML    |
+| 数据库 |
+| 英语   |
+| 语文   |
+| 数学   |
++--------+
 
 3.查询所有同学的学号、姓名、选课数、总成绩
 select a.sid '学号',a.sname '姓名',count(b.cid) '选课数',sum(score) '总成绩' from student a left join sc b on a.sid=b.sid group by a.sid,a.sname order by a.sid;
@@ -17,7 +36,12 @@ select a.sid '学号',a.sname '姓名',count(b.cid) '选课数',sum(score) '总�
 +------+------+--------+--------+
 
 4.查询所有课程成绩都小于等于60分的同学的学号、姓名；
-select a.sid,a.sname,score from student a,sc b where a.sid=b.sid group by a.sid,a.sname having score <=60 ;
+select a.sid,a.sname from student a inner join sc b on a.sid=b.sid group by a.sid having max(score) <=60 ;
++------+-------+
+| sid  | sname |
++------+-------+
+| 1006 | 周八  |
++------+-------+
 
 
 5.查询没有学全所有课的同学的学号、姓名；
@@ -101,7 +125,6 @@ select Course.CID , Course.Cname  from Course , SC where Course.CID = SC.CID gro
 +-----+----------+
 |   1 | 企业管理 |
 +-----+----------+
-
 
 
 12.查询两门以上不及格课程的同学的学号及其平均成绩
